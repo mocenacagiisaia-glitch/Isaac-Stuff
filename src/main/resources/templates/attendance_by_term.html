@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance by Term</title>
+</head>
+<body>
+
+<h1>Attendance for Term {{ termId }}</h1>
+
+<div th:each="student : ${parent.childrenAsParent1}">
+    <h2 th:text="${student.firstName} + ' ' + ${student.lastName}"></h2>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Week Number</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody th:each="attendance : ${attendancesForStudent${student.id}}">
+            <tr>
+                <td th:text="${attendance.weekNumber}">Week Number</td>
+                <td th:text="${attendance.date}">Date</td>
+                <td th:text="${attendance.status}">Status</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Student or Teacher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">SAMS</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://localhost:8080/auth/logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 pt-5">
+        <h1 class="text-center">Update Student or Teacher</h1>
+
+        <div class="mb-3">
+            <h5>Search Students</h5>
+            <input type="text" id="studentSearch" class="form-control" placeholder="Enter First Name or Last Name">
+            <button class="btn btn-primary mt-2" id="searchStudentBtn">Search</button>
+            <ul id="studentList" class="list-group mt-3"></ul>
+        </div>
+
+        <div class="mb-3">
+            <h5>Search Teachers</h5>
+            <input type="text" id="teacherSearch" class="form-control" placeholder="Enter First Name or Last Name">
+            <button class="btn btn-primary mt-2" id="searchTeacherBtn">Search</button>
+            <ul id="teacherList" class="list-group mt-3"></ul>
+        </div>
+
+        <div class="mt-3" id="updateFormContainer" style="display:none;">
+            <h2 id="formTitle">Update Student</h2>
+            <form id="updateForm">
+                <input type="hidden" id="entityId" name="id">
+                <div class="mb-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="firstName" name="firstName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" required>
+                </div>
+                <div class="mb-3" id="genderContainer" style="display: none;">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="dateOfBirthContainer" style="display: none;">
+                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+                </div>
+                <div class="mb-3" id="addressContainer" style="display: none;">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="address" name="address" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="mb-3" id="contactContainer" style="display: none;">
+                    <label for="contact" class="form-label">Contact</label>
+                    <input type="text" class="form-control" id="contact" name="contact">
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="button" class="btn btn-secondary" id="cancelUpdateBtn">Cancel</button>
+                <button type="button" class="btn btn-secondary" id="backBtn">Back</button>
+            </form>
+            <div id="responseMessage" class="mt-3"></div>
+        </div>
+    </div>
+
+    <footer class="footer text-white text-center py-3">
+        <p>&copy; 2024 SAMS. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('searchStudentBtn').addEventListener('click', function() {
+            const query = document.getElementById('studentSearch').value;
+            fetch(`/admin/search-students?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const studentList = document.getElementById('studentList');
+                    studentList.innerHTML = '';
+                    data.forEach(student => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.innerText = `${student.firstName} ${student.lastName}`;
+                        listItem.onclick = () => loadStudentData(student);
+                        studentList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching students:', error));
+        });
+
+        document.getElementById('searchTeacherBtn').addEventListener('click', function() {
+            const query = document.getElementById('teacherSearch').value;
+            fetch(`/admin/search-teachers?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const teacherList = document.getElementById('teacherList');
+                    teacherList.innerHTML = '';
+                    data.forEach(teacher => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.innerText = `${teacher.firstName} ${teacher.lastName}`;
+                        listItem.onclick = () => loadTeacherData(teacher);
+                        teacherList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching teachers:', error));
+        });
+
+        function loadStudentData(student) {
+            document.getElementById('formTitle').innerText = 'Update Student';
+            document.getElementById('entityId').value = student.id;
+            document.getElementById('firstName').value = student.firstName;
+            document.getElementById('lastName').value = student.lastName;
+            document.getElementById('genderContainer').style.display = 'block'; // Show gender field
+            document.getElementById('gender').value = student.gender || '';
+            document.getElementById('dateOfBirthContainer').style.display = 'block'; // Show DOB field
+            document.getElementById('dateOfBirth').value = student.dateOfBirth || '';
+            document.getElementById('addressContainer').style.display = 'block'; // Show address field
+            document.getElementById('address').value = student.address || '';
+            document.getElementById('contactContainer').style.display = 'none'; // Hide contact for students
+            document.getElementById('email').value = student.email;
+            document.getElementById('updateFormContainer').style.display = 'block';
+        }
+
+        function loadTeacherData(teacher) {
+            document.getElementById('formTitle').innerText = 'Update Teacher';
+            document.getElementById('entityId').value = teacher.id;
+            document.getElementById('firstName').value = teacher.firstName;
+            document.getElementById('lastName').value = teacher.lastName;
+            document.getElementById('genderContainer').style.display = 'none'; // Hide gender for teachers
+            document.getElementById('dateOfBirthContainer').style.display = 'block'; // Show date of birth for teachers
+            document.getElementById('dateOfBirth').value = teacher.dateOfBirth || ''; // Optional for teachers
+            document.getElementById('addressContainer').style.display = 'block'; // Show address for teachers
+            document.getElementById('address').value = teacher.address || ''; // Optional for teachers
+            document.getElementById('contactContainer').style.display = 'block'; // Show contact for teachers
+            document.getElementById('contact').value = teacher.contact || ''; // Optional for teachers
+            document.getElementById('email').value = teacher.email;
+            document.getElementById('updateFormContainer').style.display = 'block';
+        }
+
+        document.getElementById('updateForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const entityType = document.getElementById('formTitle').innerText.includes('Student') ? 'student' : 'teacher';
+            const url = `/admin/update-${entityType}`;
+            
+            fetch(url, {
+                method: 'PUT',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const responseMessage = document.getElementById('responseMessage');
+                responseMessage.innerHTML = `<div class="alert alert-${data.success === 'true' ? 'success' : 'danger'}">${data.message}</div>`;
+                if (data.success === 'true') {
+                    document.getElementById('updateFormContainer').style.display = 'none';
+                    document.getElementById('updateForm').reset();
+                }
+            })
+            .catch(error => console.error('Error updating:', error));
+        });
+
+        document.getElementById('backBtn').addEventListener('click', function() {
+            document.getElementById('updateFormContainer').style.display = 'none';
+            document.getElementById('updateForm').reset();
+            document.getElementById('studentList').innerHTML = ''; // Clear the student list
+            document.getElementById('teacherList').innerHTML = ''; // Clear the teacher list
+        });
+    </script>
+</body>
+</html>
